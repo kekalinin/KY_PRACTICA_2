@@ -1,0 +1,22 @@
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Сгенерированные артефакты
+*.png
+*.svg
+*.mmd.out

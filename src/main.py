@@ -6,6 +6,7 @@ from src.cli import parse_args
 from src.config import create_config
 from src.errors import ConfigError
 from src.graph import Graph
+from src.loadorder import compute_load_order
 from src.pypi_client import fetch_package_info
 from src.requires import parse_requires_dist
 from src.testrepo import parse_test_repo
@@ -46,7 +47,6 @@ def main():
 
         if config.is_test_mode:
             graph = parse_test_repo(config.repo)
-            start_node = config.package
         else:
             graph = build_pypi_graph(
                 config.package,
@@ -54,28 +54,45 @@ def main():
                 config.max_depth,
                 config.filter_str
             )
-            start_node = config.package
+
+        start_node = config.package
 
         print(f"\nГраф зависимостей '{start_node}':")
-        result = dfs_traversal(
+        traversal_result = dfs_traversal(
             graph,
             start_node,
             config.max_depth,
             config.filter_str
         )
 
-        for edge in result['edges']:
+        for edge in traversal_result['edges']:
             print(f"  {edge[0]} -> {edge[1]}")
 
-        if result['cycles']:
+        if traversal_result['cycles']:
             print("\nОбнаружены циклы:")
-            for cycle in result['cycles']:
+            for cycle in traversal_result['cycles']:
                 print(f"  {' -> '.join(cycle)}")
 
-        if result['filtered']:
+        if traversal_result['filtered']:
             print("\nОтфильтрованы пакеты:")
-            for pkg in result['filtered']:
+            for pkg in traversal_result['filtered']:
                 print(f"  {pkg}")
+
+        print(f"\nПорядок загрузки зависимостей '{start_node}':")
+        order_result = compute_load_order(
+            graph,
+            start_node,
+            config.max_depth,
+            config.filter_str
+        )
+
+        for index, package in enumerate(order_result['order'], 1):
+            print(f"  {index}. {package}")
+
+        if order_result['cycles']:
+            print("\nЦиклы (разорваны для сортировки):")
+            for cycle in order_result['cycles']:
+                print(f"  {' -> '.join(cycle)}")
 
     except ConfigError as error:
         print(f"Ошибка: {error.message}", file=sys.stderr)

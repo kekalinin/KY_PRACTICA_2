@@ -2,7 +2,54 @@
 
 import argparse
 
-from src import constants
+from src.constants import DEFAULT_MAX_DEPTH
+
+
+def _add_package_arg(parser):
+    """Добавить аргумент --package."""
+    parser.add_argument(
+        '--package',
+        required=True,
+        help='имя анализируемого пакета'
+    )
+
+
+def _add_repo_args(parser):
+    """Добавить аргументы --repo и --test-repo."""
+    parser.add_argument(
+        '--repo',
+        required=True,
+        help='URL репозитория или путь к тестовому файлу'
+    )
+    parser.add_argument(
+        '--test-repo',
+        action='store_true',
+        help='включить режим тестового репозитория'
+    )
+
+
+def _add_output_args(parser):
+    """Добавить аргумент --output."""
+    parser.add_argument(
+        '--output',
+        required=True,
+        help='имя файла с изображением графа'
+    )
+
+
+def _add_analysis_args(parser):
+    """Добавить аргументы --max-depth и --filter."""
+    parser.add_argument(
+        '--max-depth',
+        type=int,
+        default=DEFAULT_MAX_DEPTH,
+        help='максимальная глубина анализа'
+    )
+    parser.add_argument(
+        '--filter',
+        default='',
+        help='подстрока для фильтрации пакетов'
+    )
 
 
 def create_parser():
@@ -12,47 +59,12 @@ def create_parser():
         argparse.ArgumentParser: настроенный парсер
     """
     parser = argparse.ArgumentParser(
-        description="Визуализатор графа зависимостей pip"
+        description='CLI-инструмент визуализации графа зависимостей'
     )
-
-    parser.add_argument(
-        "--package",
-        required=True,
-        help="Имя анализируемого пакета"
-    )
-
-    parser.add_argument(
-        "--repo",
-        required=True,
-        help="URL репозитория или путь к тестовому файлу"
-    )
-
-    parser.add_argument(
-        "--test-repo",
-        action="store_true",
-        default=False,
-        help="Режим работы с тестовым репозиторием"
-    )
-
-    parser.add_argument(
-        "--output",
-        required=True,
-        help="Имя файла с изображением графа"
-    )
-
-    parser.add_argument(
-        "--max-depth",
-        type=int,
-        required=True,
-        help="Максимальная глубина анализа"
-    )
-
-    parser.add_argument(
-        "--filter",
-        default=constants.DEFAULT_FILTER,
-        help="Подстрока для фильтрации пакетов"
-    )
-
+    _add_package_arg(parser)
+    _add_repo_args(parser)
+    _add_output_args(parser)
+    _add_analysis_args(parser)
     return parser
 
 
@@ -60,7 +72,7 @@ def parse_args(args=None):
     """Разобрать аргументы командной строки.
 
     Args:
-        args: список аргументов (для тестирования)
+        args: список аргументов (для тестов). По умолчанию sys.argv.
 
     Returns:
         argparse.Namespace: разобранные аргументы

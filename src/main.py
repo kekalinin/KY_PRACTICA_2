@@ -7,7 +7,9 @@ from src.config import create_config
 from src.errors import ConfigError
 from src.graph import Graph
 from src.loadorder import compute_load_order
+from src.mermaid import generate_mermaid
 from src.pypi_client import fetch_package_info
+from src.render import render_mermaid_to_png
 from src.requires import parse_requires_dist
 from src.testrepo import parse_test_repo
 from src.traversal import dfs_traversal
@@ -93,6 +95,18 @@ def main():
             print("\nЦиклы (разорваны для сортировки):")
             for cycle in order_result['cycles']:
                 print(f"  {' -> '.join(cycle)}")
+
+        print(f"\nДиаграмма Mermaid:")
+        mermaid_text = generate_mermaid(
+            graph,
+            start_node,
+            config.max_depth,
+            config.filter_str
+        )
+        print(mermaid_text)
+
+        print(f"\nСохранение диаграммы в {config.output}...")
+        render_mermaid_to_png(mermaid_text, config.output)
 
     except ConfigError as error:
         print(f"Ошибка: {error.message}", file=sys.stderr)
